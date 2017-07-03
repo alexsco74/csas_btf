@@ -1,2 +1,3 @@
 # csas_btf
-Drupal7 -> block2field
+Drupal7 -> block2field<br/>
+Создание типа поля для использования блока на выводе материала.
