@@ -1,0 +1,6 @@
+name = Csas block2field
+description = Csas block2field
+core = 7.x
+version = VERSION
+package = Csas
+dependencies[] = block

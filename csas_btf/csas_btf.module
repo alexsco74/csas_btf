@@ -1,0 +1,156 @@
+<?php
+/**
+ * Implements of hook_field_info().
+ */
+function csas_btf_field_info() {
+  return array(
+    'csas_btf' => array(
+      'label' => t('Block to field'),
+      'description' => t('Block to field.'),
+      'default_widget' => 'csas_btf_exposed',
+      'default_formatter' => 'csas_btf_formatter_default',
+      'instance_settings' => array(
+        'init' => TRUE,
+        'blo' => array(),
+      )
+    ),
+  );
+}
+
+/**
+ * Implements of hook_field_widget_info().
+ */
+function csas_btf_field_widget_info() {
+  return array(
+    'csas_btf_exposed' => array(
+      'label' => t('Csas block2field (exposed)'),
+      'field types' => array(
+        'csas_btf'
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_prepare_view().
+ *
+ * Must populate items, for force rendering the output.
+ */
+function csas_btf_field_prepare_view($entity_type, $entities, $field, $instances, $langcode, &$items) {
+  foreach ($entities as $id => $entity) {
+    if (empty($items[$id])) {
+      $items[$id] = array(0);
+    }
+  }
+}
+
+/**
+ * Implements hook_field_instance_settings_form().
+ */
+function csas_btf_field_instance_settings_form($field, $instance) {
+  $form = array();
+  $blk = _block_rehash();
+  $blk_opt = array();
+  if (!empty($blk)) {
+    foreach ($blk as $blk_k => $blk_v) {
+      if (!isset($blk_opt[$blk_v['module']])) {
+        $blk_opt[$blk_v['module']] = array();
+      }
+      $blk_key = $blk_v['module'] . '__' . $blk_v['delta'];
+      if ($blk_v['title'] == '' || $blk_v['title'] == '<none>') {
+        $tit = $blk_key;
+      }
+      else {
+        $tit = $blk_v['title'];
+      }
+      $blk_opt[$blk_v['module']][$blk_key] = $tit;
+    }
+  }
+  $form['blo'] = array(
+    '#type' => 'select',
+    '#title' => t('blo'),
+    '#options' => $blk_opt,
+    '#default_value' => $instance['settings']['blo'],
+  );
+  return $form;
+}
+
+/**
+ * Implements hook_field_formatter_info().
+ */
+function csas_btf_field_formatter_info() {
+  return array(
+    'csas_btf_formatter_default' => array(
+      'label' => t('Csas block to field (default)'),
+      'field types' => array(
+        'csas_btf'
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements of hook_field_formatter_view().
+ */
+function csas_btf_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  $element = array();
+  $element[0] = array(
+    '#theme' => 'csas_btf',
+    '#opt' => array(
+      'blo' => $instance['settings']['blo']
+    ),
+  );
+  return $element;
+}
+
+/**
+ * Implements of hook_theme().
+ */
+function csas_btf_theme($existing, $type, $theme, $path) {
+  return array(
+    'csas_btf' => array(
+      'variables' => array(
+        'opt' => NULL,
+      ),
+    ),
+  );
+}
+
+/**
+ * Theme function for display block to field.
+ */
+function theme_csas_btf($vars) {
+  $blo = $vars['opt']['blo'];
+  $attributes = array(
+    'class' => array('csas-btf')
+  );
+  if (!empty($blo)) {
+    $blo_ex = explode('__', $blo);
+    if (!empty($blo_ex) && count($blo_ex) == 2) {
+      $mod = $blo_ex[0];
+      $del = $blo_ex[1];
+      $fun = $mod . '_block_view';
+      if (function_exists($fun)) {
+        $blo_bui = $fun($del);
+        $con = '';
+        if (!empty($blo_bui['content'])) {
+          $con = $blo_bui['content'];
+        }
+      }
+    }
+  }
+  if (!empty($con)) {
+    $output = array(
+      '#markup' => $con,
+      '#attributes' => $attributes
+    );
+  }
+  return drupal_render($output);
+}
+
+/**
+ * Implements hook_field_is_empty().
+ */
+function csas_btf_field_is_empty($item, $field) {
+  return empty($item['value']);
+}

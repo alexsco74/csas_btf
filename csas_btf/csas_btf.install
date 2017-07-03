@@ -1,0 +1,18 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the csas block2field module.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function csas_btf_install() {
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function csas_btf_uninstall() {
+}
